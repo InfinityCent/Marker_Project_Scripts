@@ -126,8 +126,8 @@ for CC in split_CC:
             strain_df = p.read_csv(strain_path)
 
             query_path = os.path.join(cluster_dir, '%s\\query.csv' % ds_dir)
-            query = p.read_csv(query_path)
-            query = set(query['ORF'])
+            query_set = p.read_csv(query_path)
+            query_set = set(query_set['ORF'])
 
             background_path = 'C:\\Users\\peree\\OneDrive\\Desktop\\CompBio_Code\\fun_enrich_files\\genes_list\\deletion_and_ts_array_genes.csv'
             background = p.read_csv(background_path)
@@ -160,17 +160,17 @@ for CC in split_CC:
                     except KeyError:
                         continue
 
+                    query = set()
+                    for sid, straindata in df_stage.iterrows():
+                        orf = straindata['ORF']
+                        stage_val = straindata[stage]
+                        if (orf in query_set) and (orf not in query) and (stage_val > 0):
+                            query.add(orf)
+
                     # do enrichment analysis
                     df_slim = do_enrichment_analysis(query, background, slim)
                     df_slim.rename(columns=col_map, inplace=True)
                     df_slim = df_slim[col_final]
                     df_slim.to_excel(writer, sheet_name=sheetname, index=False)
                 writer.close()
-
-                # query = set()
-                # for sid, straindata in df_stage.iterrows():
-                #    orf = straindata['ORF']
-                #    stage_val = straindata[stage]
-                #    if orf not in query and stage_val > 0.05:
-                #        query.add(orf)
 print("DONE")
